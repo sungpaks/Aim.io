@@ -1,10 +1,11 @@
 import React, { useRef, useEffect, useState } from "react";
+import Timer from "./Timer.js";
 
 function getRandom(min, max) {
 	return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 function newPosition() {
-	return [getRandom(0, 1000), getRandom(0, 500)];
+	return [getRandom(100, 900), getRandom(100, 400)];
 }
 function isInTarget(x, y, targetPositionX, targetPositionY) {
 	const dist = Math.sqrt((targetPositionX-x) ** 2 + (targetPositionY-y) ** 2);
@@ -21,9 +22,10 @@ function Game() {
 	const canvasRef = useRef(null);
 	const [score, setScore] = useState(0);
 	const [time, setTime] = useState(0);
+	setInterval(() => setTime(time + 100), 100);
 
 	const onClick = (e) => {
-		setScore(isInTarget(e.offsetX, e.offsetY, targetPositionX, targetPositionY));
+		setScore(score + isInTarget(e.nativeEvent.offsetX, e.nativeEvent.offsetY, targetPositionX, targetPositionY));
 		setTargetPosition(newPosition());
 	};
 
@@ -44,13 +46,13 @@ function Game() {
 		ctx.fill();
 		ctx.stroke();
 	} , [targetPositionX, targetPositionY]);
-
 	return (
 		<div>
 			<h1>Aim.io</h1>
 			<h2>Click the target!</h2>
 			<canvas ref={canvasRef} width="1000" height="500" onClick={onClick} />
 			<h3>Score: {score}</h3>
+			<Timer />
 		</div>
 	);
 }
