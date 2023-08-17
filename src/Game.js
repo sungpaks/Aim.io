@@ -52,7 +52,7 @@ function Game(props) {
 			<h1>Aim.io : Started !</h1>
 			<h2>Click the target!</h2>
 			<canvas ref={canvasRef} width="1000" height="500" onClick={onClick} />
-			<h3>Score: {score}</h3>
+			<h3>Youre Current Score: {score}</h3>
 			<TimeCounter />
 		</div>
 	);
