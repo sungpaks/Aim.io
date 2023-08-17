@@ -3,7 +3,7 @@ import Game from "./Game.js";
 
 function AfterStart() {
 	const [timesup, setTimesup] = useState(false);
-	setTimeout(setTimesup, 3000);
+	setTimeout(setTimesup, 30000);
 
 	return (
 		<div>
