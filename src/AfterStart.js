@@ -1,11 +1,13 @@
-import React from "react";
+import React, {useState} from "react";
 import Game from "./Game.js";
 
 function AfterStart() {
+	const [timesup, setTimesup] = useState(false);
+	setTimeout(setTimesup, 3000);
+
 	return (
 		<div>
-			<h1>Started!</h1>
-			<Game />
+			<Game timesup={timesup}/>
 		</div>
 	);
 }

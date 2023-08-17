@@ -1,26 +1,33 @@
 import React, { useRef, useEffect, useState } from "react";
 
+function useInterval(callback, delay) {
+	const savedCallback = useRef();
 
-const Timer = () => {
-	const [seconds, setSeconds] = useState(0);
-	const [milliseconds, setMilliseconds] = useState(0);
-	
+	useEffect(()=> {
+		savedCallback.current = callback;
+	}, [callback]);
+
 	useEffect(() => {
-		const interval = setInterval(() => {
-			setMilliseconds(parseInt(milliseconds) + 1);
-			if (parseInt(milliseconds) === 99) {
-				setSeconds(parseInt(seconds) + 1);
-				setMilliseconds(0);
-			}
-		}, 10);
-		return () => clearInterval(interval);
-	}, [seconds, milliseconds]);
+		function tick() {
+			savedCallback.current();
+		}
+		if (delay !== null) {
+			let id = setInterval(tick, delay);
+			return () => clearInterval(id);
+		}
+	}, [delay]);
+}
 
+function TimeCounter() {
+	const [count, setCount] = useState(0);
+
+	useInterval(()=>{
+		setCount(count + 1);
+	}, 1000)
 	return (
 		<div>
-			{seconds}:{milliseconds}
+			{count}
 		</div>
 	);
-};
-
-export default Timer;
+}
+export default TimeCounter;

@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from "react";
-import Timer from "./Timer.js";
+import GameResult from "./GameResult.js"
+import TimeCounter from "./Timer.js";
 
 function getRandom(min, max) {
 	return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -17,7 +18,7 @@ function isInTarget(x, y, targetPositionX, targetPositionY) {
 		return 0;
 	}
 }
-function Game() {
+function Game(props) {
 	const [[targetPositionX, targetPositionY], setTargetPosition] = useState(newPosition());
 	const canvasRef = useRef(null);
 	const [score, setScore] = useState(0);
@@ -46,13 +47,19 @@ function Game() {
 		ctx.fill();
 		ctx.stroke();
 	} , [targetPositionX, targetPositionY]);
-	return (
+	if (props.timesup === false) return (
 		<div>
-			<h1>Aim.io</h1>
+			<h1>Aim.io : Started !</h1>
 			<h2>Click the target!</h2>
 			<canvas ref={canvasRef} width="1000" height="500" onClick={onClick} />
 			<h3>Score: {score}</h3>
-			<Timer />
+			<TimeCounter />
+		</div>
+	);
+	else return (
+		<div>
+			<h1>Aim.io : Time's up !</h1>
+			<GameResult score={score}/>
 		</div>
 	);
 }
