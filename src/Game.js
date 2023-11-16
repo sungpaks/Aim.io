@@ -1,6 +1,12 @@
 import React, { useRef, useEffect, useState } from "react";
 import GameResult from "./GameResult.js"
 import TimeCounter from "./Timer.js";
+import "./Game.css";
+import setVoiceRecogition from "./VoiceRec.js";
+
+const bodyX = 30;
+const bodyY = 50;
+const headRadius = 10;
 
 function getRandom(min, max) {
 	return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -9,21 +15,58 @@ function newPosition() {
 	return [getRandom(100, 900), getRandom(100, 400)];
 }
 function isInTarget(x, y, targetPositionX, targetPositionY) {
-	const dist = Math.sqrt((targetPositionX-x) ** 2 + (targetPositionY-y) ** 2);
-	if (dist <= 10) {
+	const headDist = Math.sqrt((targetPositionX-x) ** 2 + (targetPositionY-headRadius-bodyY/2-y) ** 2);
+	if (headDist <= headRadius) {
 		return 2;
-	} else if (dist <= 30) {
+	} else if (Math.abs(targetPositionX-x) <= bodyX/2 && Math.abs(targetPositionY-y) <= bodyY/2) {
 		return 1;
 	} else {
 		return 0;
 	}
 }
+function drawBody(ctx, x, y) {
+	ctx.beginPath();
+	const roundness = 5;
+	ctx.moveTo(x, y - bodyY/2);
+	ctx.arcTo(x + bodyX/2, y - bodyY/2, x + bodyX/2, y + bodyY/2, roundness);
+	ctx.lineTo(x + bodyX/2, y + bodyY/2);
+	ctx.lineTo(x - bodyX/2, y + bodyY/2);
+	ctx.arcTo(x - bodyX/2, y - bodyY/2, x, y - bodyY/2, roundness);
+	ctx.closePath();
+}
+function drawEyes(ctx, x, y) {
+	ctx.beginPath();
+	ctx.moveTo(x-2, y - bodyY/2 - headRadius);
+	ctx.lineTo(x-5, y - bodyY/2 - headRadius - 3);
+	ctx.moveTo(x+2, y - bodyY/2 - headRadius);
+	ctx.lineTo(x+5, y - bodyY/2 - headRadius - 3);
+	ctx.strokeStyle = "black";
+	ctx.stroke();
+}
+function drawCross(ctx, x, y) {
+	ctx.beginPath();
+	ctx.moveTo(x+3, y);
+	ctx.lineTo(x+10, y);
+	ctx.moveTo(x-3, y);
+	ctx.lineTo(x-10, y);
+	ctx.moveTo(x, y+3);
+	ctx.lineTo(x, y+10);
+	ctx.moveTo(x, y-3);
+	ctx.lineTo(x, y-10);
+	ctx.strokeStyle = "black";
+	ctx.stroke();
+}
+
 function Game(props) {
 	const [[targetPositionX, targetPositionY], setTargetPosition] = useState(newPosition());
 	const canvasRef = useRef(null);
 	const [score, setScore] = useState(0);
 	const [time, setTime] = useState(0);
-	setInterval(() => setTime(time + 100), 100);
+	const [mouseX, setMouseX] = useState(0);
+	const [mouseY, setMouseY] = useState(0);
+	useEffect(() => {
+		setInterval(() => setTime(time + 100), 100);
+	}, [time]);
 
 	const onClick = (e) => {
 		setScore(score + isInTarget(e.nativeEvent.offsetX, e.nativeEvent.offsetY, targetPositionX, targetPositionY));
@@ -31,34 +74,50 @@ function Game(props) {
 	};
 
 	useEffect(() => {
+		setVoiceRecogition();
+	}, []);
+
+	useEffect(() => {
 		const canvas = canvasRef.current;
 		const ctx = canvas.getContext("2d");
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 		//outer circle
-		ctx.beginPath();
-		ctx.arc(targetPositionX, targetPositionY, 30, 0, 2 * Math.PI);
-		ctx.fillStyle = "green";
+		drawBody(ctx, targetPositionX, targetPositionY);
+		ctx.fillStyle = "white";
 		ctx.fill();
 		ctx.stroke();
 		//inner circle
 		ctx.beginPath();
-		ctx.arc(targetPositionX, targetPositionY, 10, 0, 2 * Math.PI);
+		ctx.arc(targetPositionX, targetPositionY - bodyY/2 - headRadius, headRadius, 0, 2 * Math.PI);
 		ctx.fillStyle = "red";
 		ctx.fill();
 		ctx.stroke();
-	} , [targetPositionX, targetPositionY]);
+		drawEyes(ctx, targetPositionX, targetPositionY);
+		drawCross(ctx, mouseX, mouseY);
+	} , [targetPositionX, targetPositionY, mouseX, mouseY]);
 	if (props.timesup === false) return (
 		<div>
-			<h1>Aim.io : Started !</h1>
-			<h2>Click the target!</h2>
-			<canvas ref={canvasRef} width="1000" height="500" onClick={onClick} />
+			<h2 style={{ fontFamily: "Roboto, sans-serif", color : "gray"}}>
+				Click The Target : score 1 per Body, score 2 per Head
+			</h2>
+			<canvas ref={canvasRef} 
+				style = {{
+					border: "1px solid black",
+					backgroundColor: "lightblue"
+				}}
+				width="1000" height="500" 
+				onClick={onClick} 
+				onMouseMove={e => {
+					setMouseX(e.nativeEvent.offsetX);
+					setMouseY(e.nativeEvent.offsetY);
+				}}
+			/>
 			<h3>Youre Current Score: {score}</h3>
 			<TimeCounter />
 		</div>
 	);
 	else return (
 		<div>
-			<h1>Aim.io : Time's up !</h1>
 			<GameResult score={score}/>
 		</div>
 	);
