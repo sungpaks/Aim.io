@@ -57,8 +57,16 @@ function drawCross(ctx, x, y) {
 	ctx.stroke();
 }
 
+
 function Game(props) {
-	const [[targetPositionX, targetPositionY], setTargetPosition] = useState(newPosition());
+	const targetList = [
+		{id : 1, x : newPosition(), y: newPosition()},
+		{id : 2, x : newPosition(), y: newPosition()},
+		{id : 3, x : newPosition(), y: newPosition()},
+		{id : 4, x : newPosition(), y: newPosition()},
+		{id : 5, x : newPosition(), y: newPosition()},
+	]
+	//const [[targetPositionX, targetPositionY], setTargetPosition] = useState(newPosition());
 	const canvasRef = useRef(null);
 	const [score, setScore] = useState(0);
 	const [time, setTime] = useState(0);
@@ -69,8 +77,11 @@ function Game(props) {
 	}, [time]);
 
 	const onClick = (e) => {
-		setScore(score + isInTarget(e.nativeEvent.offsetX, e.nativeEvent.offsetY, targetPositionX, targetPositionY));
-		setTargetPosition(newPosition());
+		targetList.map((target) => {
+			setScore(score + isInTarget(e.nativeEvent.offsetX, e.nativeEvent.offsetY, target.x, target.y))
+			target.x = newPosition();
+			target.y = newPosition();
+		});
 	};
 
 	useEffect(() => {
@@ -78,23 +89,25 @@ function Game(props) {
 	}, []);
 
 	useEffect(() => {
-		const canvas = canvasRef.current;
-		const ctx = canvas.getContext("2d");
-		ctx.clearRect(0, 0, canvas.width, canvas.height);
-		//outer circle
-		drawBody(ctx, targetPositionX, targetPositionY);
-		ctx.fillStyle = "white";
-		ctx.fill();
-		ctx.stroke();
-		//inner circle
-		ctx.beginPath();
-		ctx.arc(targetPositionX, targetPositionY - bodyY/2 - headRadius, headRadius, 0, 2 * Math.PI);
-		ctx.fillStyle = "red";
-		ctx.fill();
-		ctx.stroke();
-		drawEyes(ctx, targetPositionX, targetPositionY);
-		drawCross(ctx, mouseX, mouseY);
-	} , [targetPositionX, targetPositionY, mouseX, mouseY]);
+		targetList.map((target) => {
+			const canvas = canvasRef.current;
+			const ctx = canvas.getContext("2d");
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			//outer circle
+			drawBody(ctx, target.x, target.y);
+			ctx.fillStyle = "white";
+			ctx.fill();
+			ctx.stroke();
+			//inner circle
+			ctx.beginPath();
+			ctx.arc(target.x, target.y - bodyY/2 - headRadius, headRadius, 0, 2 * Math.PI);
+			ctx.fillStyle = "red";
+			ctx.fill();
+			ctx.stroke();
+			drawEyes(ctx, target.x, target.y);
+			drawCross(ctx, mouseX, mouseY);
+		});
+	} , [score, redrawId, mouseX, mouseY]);
 	if (props.timesup === false) return (
 		<div>
 			<h2 style={{ fontFamily: "Roboto, sans-serif", color : "gray"}}>
