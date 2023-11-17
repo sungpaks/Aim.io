@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Game from "./Game.js";
 import styled from "styled-components";
+import TimeCounter from "./Timer.js";
 
 // Styled component for the container
 const Container = styled.div`
@@ -8,7 +9,7 @@ const Container = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100%;
+  min-height: 100vh;
   background-color: #f0f0f0;
 `;
 
@@ -20,12 +21,25 @@ function AfterStart() {
 
   return (
     <Container>
-      <h1 style={{ fontFamily: "Arial, sans-serif", fontSize: "2em", color: "blue" }}>
+      <h1
+        style={{
+          fontFamily: "Arial, sans-serif",
+          fontSize: "2em",
+          color: "blue",
+        }}
+      >
         AIM.io
       </h1>
-      <p style={{ fontFamily: "Roboto, sans-serif", fontSize: "1.5em", color: "green" }}>
+      <p
+        style={{
+          fontFamily: "Roboto, sans-serif",
+          fontSize: "1.5em",
+          color: "green",
+        }}
+      >
         {timesup === true ? "Game's up" : "Game in progress..."}
       </p>
+      {timesup === false ? <TimeCounter /> : <></>}
       <Game timesup={timesup} />
     </Container>
   );
