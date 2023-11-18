@@ -13,7 +13,7 @@ const Container = styled.div`
   background-color: #f0f0f0;
 `;
 
-function AfterStart() {
+function AfterStart({ onReplay }) {
   const [timesup, setTimesup] = useState(false);
 
   // Simulate timesup after 30 seconds
@@ -40,7 +40,7 @@ function AfterStart() {
         {timesup === true ? "Game's up" : "Game in progress..."}
       </p>
       {timesup === false ? <TimeCounter /> : <></>}
-      <Game timesup={timesup} />
+      <Game timesup={timesup} onReplay={onReplay} />
     </Container>
   );
 }

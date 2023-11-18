@@ -10,7 +10,11 @@ function App() {
   return (
     <div>
       {console.log(isStarted)}
-      {isStarted === false ? <BeforeStart onStart={onStartButtonClicked}/> : <AfterStart />}
+      {isStarted === false ? (
+        <BeforeStart onStart={onStartButtonClicked} />
+      ) : (
+        <AfterStart onReplay={() => setIsStarted(false)} />
+      )}
     </div>
   );
 }

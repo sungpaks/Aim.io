@@ -14,44 +14,50 @@ function getRandom(min, max) {
 function newPosition() {
   return [getRandom(100, 900), getRandom(100, 400)];
 }
-function isInTarget(x, y, targetPositionX, targetPositionY) {
+function isInTarget(x, y, targetPositionX, targetPositionY, rate) {
   const headDist = Math.sqrt(
     (targetPositionX - x) ** 2 +
-      (targetPositionY - headRadius - bodyY / 2 - y) ** 2
+      (targetPositionY - headRadius * rate - (bodyY * rate) / 2 - y) ** 2
   );
-  if (headDist <= headRadius) {
+  if (headDist <= headRadius * rate) {
     return 2;
   } else if (
-    Math.abs(targetPositionX - x) <= bodyX / 2 &&
-    Math.abs(targetPositionY - y) <= bodyY / 2
+    Math.abs(targetPositionX - x) <= (bodyX * rate) / 2 &&
+    Math.abs(targetPositionY - y) <= (bodyY * rate) / 2
   ) {
     return 1;
   } else {
     return 0;
   }
 }
-function drawBody(ctx, x, y) {
+function drawBody(ctx, x, y, rate) {
   ctx.beginPath();
   const roundness = 5;
-  ctx.moveTo(x, y - bodyY / 2);
+  ctx.moveTo(x, y - (bodyY * rate) / 2);
   ctx.arcTo(
-    x + bodyX / 2,
-    y - bodyY / 2,
-    x + bodyX / 2,
-    y + bodyY / 2,
+    x + (bodyX * rate) / 2,
+    y - (bodyY * rate) / 2,
+    x + (bodyX * rate) / 2,
+    y + (bodyY * rate) / 2,
     roundness
   );
-  ctx.lineTo(x + bodyX / 2, y + bodyY / 2);
-  ctx.lineTo(x - bodyX / 2, y + bodyY / 2);
-  ctx.arcTo(x - bodyX / 2, y - bodyY / 2, x, y - bodyY / 2, roundness);
+  ctx.lineTo(x + (bodyX * rate) / 2, y + (bodyY * rate) / 2);
+  ctx.lineTo(x - (bodyX * rate) / 2, y + (bodyY * rate) / 2);
+  ctx.arcTo(
+    x - (bodyX * rate) / 2,
+    y - (bodyY * rate) / 2,
+    x,
+    y - (bodyY * rate) / 2,
+    roundness
+  );
   ctx.closePath();
 }
-function drawEyes(ctx, x, y) {
+function drawEyes(ctx, x, y, rate) {
   ctx.beginPath();
-  ctx.moveTo(x - 2, y - bodyY / 2 - headRadius);
-  ctx.lineTo(x - 5, y - bodyY / 2 - headRadius - 3);
-  ctx.moveTo(x + 2, y - bodyY / 2 - headRadius);
-  ctx.lineTo(x + 5, y - bodyY / 2 - headRadius - 3);
+  ctx.moveTo(x - 2, y - (bodyY * rate) / 2 - headRadius * rate);
+  ctx.lineTo(x - 5, y - (bodyY * rate) / 2 - headRadius * rate - 3);
+  ctx.moveTo(x + 2, y - (bodyY * rate) / 2 - headRadius * rate);
+  ctx.lineTo(x + 5, y - (bodyY * rate) / 2 - headRadius * rate - 3);
   ctx.strokeStyle = "black";
   ctx.stroke();
 }
@@ -71,11 +77,11 @@ function drawCross(ctx, x, y) {
 
 function Game(props) {
   const [targetList, setTargetList] = useState([
-    { id: 1, x: 500, y: 250 },
-    { id: 2, x: getRandom(100, 900), y: getRandom(100, 400) },
-    { id: 3, x: getRandom(100, 900), y: getRandom(100, 400) },
-    { id: 4, x: getRandom(100, 900), y: getRandom(100, 400) },
-    { id: 5, x: getRandom(100, 900), y: getRandom(100, 400) },
+    { id: 1, x: 500, y: 250, rate: 1.0 },
+    { id: 2, x: getRandom(100, 900), y: getRandom(100, 400), rate: 1.0 },
+    { id: 3, x: getRandom(100, 900), y: getRandom(100, 400), rate: 1.0 },
+    { id: 4, x: getRandom(100, 900), y: getRandom(100, 400), rate: 1.0 },
+    { id: 5, x: getRandom(100, 900), y: getRandom(100, 400), rate: 1.0 },
   ]);
   //const [[targetPositionX, targetPositionY], setTargetPosition] = useState(newPosition());
   const canvasRef = useRef(null);
@@ -90,28 +96,38 @@ function Game(props) {
     );
     return () => clearInterval(interval); // clearInterval을 통해 타이머 제거
   }, []);
+  useEffect(() => {
+    targetList.map((target) => {
+      if (target.rate < 1.6) target.rate = target.rate + 0.02;
+    });
+  }, [time]);
 
   const onClick = (e) => {
+    let isHit = false;
     for (let i = targetList.length - 1; i >= 0; i--) {
       const hit = isInTarget(
         e.nativeEvent.offsetX,
         e.nativeEvent.offsetY,
         targetList[i].x,
-        targetList[i].y
+        targetList[i].y,
+        targetList[i].rate
       );
       if (hit > 0) {
         //const updatedTargetList = [...targetList];
         const [nx, ny] = newPosition();
         targetList[i].x = nx;
         targetList[i].y = ny;
+        targetList[i].rate = 1.0;
         //updatedTargetList[i] = { ...updatedTargetList[i], x: nx, y: ny };
 
         setScore(score + hit);
         //setTargetList(updatedTargetList);
         console.log(targetList);
+        isHit = true;
         break;
       }
     }
+    if (!isHit) setScore(score - 1);
   };
 
   useEffect(() => {
@@ -125,7 +141,7 @@ function Game(props) {
     drawCross(ctx, mouseX, mouseY);
     targetList.map((target) => {
       //outer circle
-      drawBody(ctx, target.x, target.y);
+      drawBody(ctx, target.x, target.y, target.rate);
       ctx.fillStyle = "white";
       ctx.fill();
       ctx.stroke();
@@ -133,15 +149,15 @@ function Game(props) {
       ctx.beginPath();
       ctx.arc(
         target.x,
-        target.y - bodyY / 2 - headRadius,
-        headRadius,
+        target.y - (bodyY * target.rate) / 2 - headRadius * target.rate,
+        headRadius * target.rate,
         0,
         2 * Math.PI
       );
       ctx.fillStyle = "red";
       ctx.fill();
       ctx.stroke();
-      drawEyes(ctx, target.x, target.y);
+      drawEyes(ctx, target.x, target.y, target.rate);
     });
     console.log(1);
   }, [score, mouseX, mouseY]);
@@ -172,7 +188,7 @@ function Game(props) {
   else
     return (
       <div>
-        <GameResult score={score} />
+        <GameResult score={score} onReplay={props.onReplay} />
       </div>
     );
 }
