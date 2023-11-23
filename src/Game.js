@@ -1,6 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
 import GameResult from "./GameResult.js";
-import TimeCounter from "./Timer.js";
 import "./Game.css";
 import setVoiceRecogition from "./VoiceRec.js";
 
@@ -160,7 +159,7 @@ function Game(props) {
     });
     drawCross(ctx, mouseX, mouseY);
     console.log(1);
-  }, [score, mouseX, mouseY]);
+  }, [score, mouseX, mouseY, targetList]);
 
   if (props.timesup === false)
     return (
