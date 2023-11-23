@@ -138,7 +138,6 @@ function Game(props) {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawCross(ctx, mouseX, mouseY);
     targetList.map((target) => {
       //outer circle
       drawBody(ctx, target.x, target.y, target.rate);
@@ -159,6 +158,7 @@ function Game(props) {
       ctx.stroke();
       drawEyes(ctx, target.x, target.y, target.rate);
     });
+    drawCross(ctx, mouseX, mouseY);
     console.log(1);
   }, [score, mouseX, mouseY]);
 
